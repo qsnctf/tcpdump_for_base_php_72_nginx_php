@@ -1,0 +1,3 @@
+-- db.sql
+-- Place your SQL dump here. This file will be auto-imported on first MySQL startup.
+-- If this file is empty, the database will start with no tables.

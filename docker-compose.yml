@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:1.24-alpine
+    container_name: web_nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./files:/var/www/html
+      - ./conf/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - php
+    networks:
+      - appnet
+    tty: true
+
+  php:
+    build:
+      context: ./build/php
+      dockerfile: Dockerfile
+    container_name: web_php
+    volumes:
+      - ./files:/var/www/html
+    depends_on:
+      - mysql
+    networks:
+      - appnet
+
+  mysql:
+    image: mysql:5.7
+    container_name: web_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+    volumes:
+      - mysqldata:/var/lib/mysql
+      - ./db.sql:/docker-entrypoint-initdb.d/db.sql
+    ports:
+      - "3306:3306"
+    networks:
+      - appnet
+
+  tcpdump:
+    build:
+      context: ./build/tcpdump
+      dockerfile: Dockerfile
+    container_name: web_tcpdump
+    network_mode: service:nginx
+    volumes:
+      - ./pcap:/pcap
+    depends_on:
+      - nginx
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+
+networks:
+  appnet:
+    driver: bridge
+
+volumes:
+  mysqldata:
