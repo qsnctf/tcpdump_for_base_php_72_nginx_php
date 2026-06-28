@@ -7,16 +7,16 @@ $pass = 'app';
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8", $user, $pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    echo "<h1>PHP 7.2 + Nginx + MySQL</h1>";
-    echo "<p>Database connected successfully!</p>";
-
-    $stmt = $pdo->query("SHOW TABLES");
-    $tables = $stmt->fetchAll(PDO::FETCH_COLUMN);
-    echo "<p>Tables: " . (count($tables) ? implode(', ', $tables) : 'none') . "</p>";
-
-    phpinfo();
 } catch (PDOException $e) {
-    echo "<h1>PHP 7.2 + Nginx + MySQL</h1>";
-    echo "<p>Database connection failed: " . $e->getMessage() . "</p>";
-    phpinfo();
+    die("Database connection failed.");
+}
+
+$id = isset($_GET['id']) ? $_GET['id'] : '1';
+
+$stmt = $pdo->query("SELECT username,email FROM users WHERE id=" . $id);
+if ($stmt && $stmt->rowCount() > 0) {
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    echo "Username: " . $row['username'] . "<br>Email: " . $row['email'];
+} else {
+    echo "No user found.";
 }
